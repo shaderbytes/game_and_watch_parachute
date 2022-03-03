@@ -14,8 +14,9 @@ var BabylonViewer = function () {
   this.camera;
   this.glowLayer;
   this.defaultPLR;
-  this.camAlphaMax = 10;
+  this.camAlphaMax = -5;
   this.rootTransformNode;
+  this.sg;
 };
 
 BabylonViewer.prototype = {
@@ -25,7 +26,7 @@ BabylonViewer.prototype = {
 
   lookAt(index) {
     gsap.to(this.camera, {
-      duration: 0.4,
+      duration: 1,
       alpha: (90 + ((1 - index) / 1) * this.camAlphaMax) * 0.01745329251,
       beta: 90 * 0.01745329251,
     });
@@ -50,8 +51,19 @@ BabylonViewer.prototype = {
         this.scene,
         [this.camera]
       );
-      this.defaultPLR.fxaaEnabled = state;
-      this.defaultPLR.samples = 2;
+     
+
+      this.defaultPLR.imageProcessingEnabled = true;
+      this.defaultPLR.samples = 4;
+      this.defaultPLR.fxaaEnabled = true;
+      this.defaultPLR.imageProcessing.colorCurvesEnabled = false;
+      this.defaultPLR.imageProcessing.vignetteEnabled = false;
+      this.defaultPLR.imageProcessing.colorGradingEnabled = false;
+      this.defaultPLR.imageProcessing.contrast = 1;
+      this.defaultPLR.imageProcessing.exposure = 1.8;
+      this.defaultPLR.imageProcessing.toneMappingEnabled = true;
+      this.defaultPLR.imageProcessing.toneMappingType =
+        BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
     } else {
       if (this.defaultPLR !== null && this.defaultPLR !== undefined) {
         this.defaultPLR.dispose();
@@ -113,8 +125,28 @@ BabylonViewer.prototype = {
     console.log(event[0]);
     event[0].parent = this.rootTransformNode;
     event[0].rotation = new BABYLON.Vector3(0, 0, 0);
-
     event[0].scaling = new BABYLON.Vector3(1, 1, 1);
+
+    //shadows
+
+    //shadows
+    //directional light
+    var light = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, -1, 0), this.scene);
+    light.intensity = 3;
+    light.shadowEnabled = true;
+    light.direction =  new BABYLON.Vector3(0.8,-0.8,-0.5);
+
+    this.sg = new BABYLON.ShadowGenerator(1024, light);
+    //shadow generator
+    this.sg.bias  = 0.0050;
+    this.sg.darkness = .05;
+    this.sg.usePercentageCloserFiltering = true;   
+
+    light.autoCalcShadowZBounds = true;
+
+    this.sg.addShadowCaster(this.scene.getNodeByName('buttons_hi_poly_primitive0'));   
+    this.sg.addShadowCaster(this.scene.getNodeByName('buttons_hi_poly_primitive1'));   
+    this.scene.getNodeByName('body_hi_poly_primitive3').receiveShadows = true;
   },
 
   loadError: function (error) {
@@ -123,6 +155,17 @@ BabylonViewer.prototype = {
   },
   loadProgress: function () {
     console.log("loadProgress");
+  },
+  toggleDebug(){
+
+    this.isDebugShowing = !this.isDebugShowing;
+    if (this.isDebugShowing) {
+    
+      this.scene.debugLayer.show();
+    } else {
+    
+      this.scene.debugLayer.hide();
+    }
   },
 
   create: function (canvasDom) {
@@ -139,7 +182,7 @@ BabylonViewer.prototype = {
 
     this.rootTransformNode = new BABYLON.TransformNode("root_transform_fix");
 
-    this.rootTransformNode.rotation = new BABYLON.Vector3(-1.5708, 0, 0);
+    this.rootTransformNode.rotation = new BABYLON.Vector3(0, 0, 0);
 
     this.rootTransformNode.scaling = new BABYLON.Vector3(-1, 1, 1);
 
@@ -171,13 +214,16 @@ BabylonViewer.prototype = {
       this.scene
     );
     this.hdrTexture.gammaSpace = false;
-    this.hdrTexture.level = 1;
+    this.hdrTexture.level = 0.8;
     this.scene.environmentTexture = this.hdrTexture;
+   this.scene.environmentTexture.rotationY = 3.913 ;
     //this.setSSAO(true);
-    this.scene.environmentIntensity = 0.7;
-
+    this.scene.environmentIntensity = 1;
+    this.changeBackgroundColor("#eeeeee")
     //this.setGlowLayer(true);
     this.setdefaultPP(true);
+
+    
 
     this.engine.runRenderLoop(this.onRenderLoop.bind(this));
     window.addEventListener("resize", this.onWindowResize.bind(this));

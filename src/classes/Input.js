@@ -53,6 +53,12 @@ class Input {
         this.dispatchEvent(EventNames.PAUSE);
 
         break;
+        case "KeyI":
+          // Key i.
+          if(event.repeat)return;
+          this.dispatchEvent(EventNames.DEBUG);
+  
+          break;
     }
   }
 }

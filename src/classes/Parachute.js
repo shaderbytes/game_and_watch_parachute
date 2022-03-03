@@ -23,6 +23,11 @@ class Parachute {
       this._viewer.lookAt(this.playerXIndex);
      
     });
+    input.addEventListener(EventNames.DEBUG, () => {       
+    
+    this._viewer.toggleDebug();
+   
+  });
   }
 }
 let singlton = new Parachute();
