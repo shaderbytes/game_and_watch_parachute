@@ -23,6 +23,22 @@ BabylonViewer.prototype = {
   changeBackgroundColor: function (color) {
     this.scene.clearColor = BABYLON.Color3.FromHexString(color);
   },
+  updateSprites(sequence) {
+    //sequence has array named sequenceData with objects with mask and sprite properties
+    //this.scene.getNodeByName('buttons_hi_poly_primitive0')
+    for (let i = 0; i < sequence.sequenceData.length; i++) {
+      let data = sequence.sequenceData[i];
+      if (Array.isArray(data.sprite)) {
+        for (let j = 0; j < data.sprite.length; j++) {
+          this.scene.getNodeByName(data.sprite[j]).enabled =
+            data.mask === 1 ? true : false;
+        }
+      } else {
+        this.scene.getNodeByName(data.sprite).enabled =
+          data.mask === 1 ? true : false;
+      }
+    }
+  },
 
   lookAt(index) {
     gsap.to(this.camera, {
@@ -51,7 +67,6 @@ BabylonViewer.prototype = {
         this.scene,
         [this.camera]
       );
-     
 
       this.defaultPLR.imageProcessingEnabled = true;
       this.defaultPLR.samples = 4;
@@ -131,22 +146,30 @@ BabylonViewer.prototype = {
 
     //shadows
     //directional light
-    var light = new BABYLON.DirectionalLight("DirectionalLight", new BABYLON.Vector3(0, -1, 0), this.scene);
+    var light = new BABYLON.DirectionalLight(
+      "DirectionalLight",
+      new BABYLON.Vector3(0, -1, 0),
+      this.scene
+    );
     light.intensity = 3;
     light.shadowEnabled = true;
-    light.direction =  new BABYLON.Vector3(0.8,-0.8,-0.5);
+    light.direction = new BABYLON.Vector3(0.8, -0.8, -0.5);
 
     this.sg = new BABYLON.ShadowGenerator(1024, light);
     //shadow generator
-    this.sg.bias  = 0.0050;
-    this.sg.darkness = .05;
-    this.sg.usePercentageCloserFiltering = true;   
+    this.sg.bias = 0.005;
+    this.sg.darkness = 0.05;
+    this.sg.usePercentageCloserFiltering = true;
 
     light.autoCalcShadowZBounds = true;
 
-    this.sg.addShadowCaster(this.scene.getNodeByName('buttons_hi_poly_primitive0'));   
-    this.sg.addShadowCaster(this.scene.getNodeByName('buttons_hi_poly_primitive1'));   
-    this.scene.getNodeByName('body_hi_poly_primitive3').receiveShadows = true;
+    this.sg.addShadowCaster(
+      this.scene.getNodeByName("buttons_hi_poly_primitive0")
+    );
+    this.sg.addShadowCaster(
+      this.scene.getNodeByName("buttons_hi_poly_primitive1")
+    );
+    this.scene.getNodeByName("body_hi_poly_primitive3").receiveShadows = true;
   },
 
   loadError: function (error) {
@@ -156,14 +179,11 @@ BabylonViewer.prototype = {
   loadProgress: function () {
     console.log("loadProgress");
   },
-  toggleDebug(){
-
+  toggleDebug() {
     this.isDebugShowing = !this.isDebugShowing;
     if (this.isDebugShowing) {
-    
       this.scene.debugLayer.show();
     } else {
-    
       this.scene.debugLayer.hide();
     }
   },
@@ -216,14 +236,12 @@ BabylonViewer.prototype = {
     this.hdrTexture.gammaSpace = false;
     this.hdrTexture.level = 0.8;
     this.scene.environmentTexture = this.hdrTexture;
-   this.scene.environmentTexture.rotationY = 3.913 ;
+    this.scene.environmentTexture.rotationY = 3.913;
     //this.setSSAO(true);
     this.scene.environmentIntensity = 1;
-    this.changeBackgroundColor("#eeeeee")
+    this.changeBackgroundColor("#eeeeee");
     //this.setGlowLayer(true);
     this.setdefaultPP(true);
-
-    
 
     this.engine.runRenderLoop(this.onRenderLoop.bind(this));
     window.addEventListener("resize", this.onWindowResize.bind(this));

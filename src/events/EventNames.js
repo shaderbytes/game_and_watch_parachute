@@ -4,5 +4,6 @@ class EventNames {
   static NEW_GAME = "NEW_GAME";  
   static PAUSE = "PAUSE";  
   static DEBUG = "DEBUG";  
+  static ON_TICKER = "ON_TICKER";
 }
 module.exports =  EventNames;
