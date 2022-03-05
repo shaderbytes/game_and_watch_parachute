@@ -36,6 +36,8 @@ class SequenceController {
         "pt_0_3",
         "pt_0_4",
       ]));
+      this.getSequence(this.SQUAD0).squadIndex = 0;
+      
       this.addSequence(this.SQUAD0B,new ParatrooperSquadSequence([
         "pt_b_0_0",
         "pt_b_0_1",
@@ -48,6 +50,7 @@ class SequenceController {
         "pt_1_4",
         "pt_1_5",
       ]));
+      this.getSequence(this.SQUAD1).squadIndex = 1;
       this.addSequence(this.SQUAD2,new ParatrooperSquadSequence([
         "pt_2_0",
         "pt_2_1",
@@ -57,6 +60,7 @@ class SequenceController {
         "pt_2_5",
         "pt_2_6",
       ]));
+      this.getSequence(this.SQUAD2).squadIndex = 2;
       this.addSequence(this.DEATH,new DeathSequence([
         "ptw_0_0",
         ["ptw_1_0", "sw_1_0"],

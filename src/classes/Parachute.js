@@ -4,6 +4,7 @@ import AudioPlayer from "@/classes/AudioPlayer.js";
 import SequenceController from "@/classes/SequenceController.js";
 import EventNames from "@/events/EventNames.js";
 class Parachute {
+ 
   constructor() {
     this.sc = new SequenceController();
     this.boat = this.sc.getSequence(this.sc.BOAT);
@@ -16,6 +17,14 @@ class Parachute {
     this.alarm = this.sc.getSequence(this.sc.ALARM);
     this.chopper = this.sc.getSequence(this.sc.CHOPPER);
     this.scoreclock = this.sc.getSequence(this.sc.SCORECLOCK);
+
+    this.tickerTime = new Ticker(1000, 1);
+    this.tickerTime.addEventListener(
+        EventNames.ON_TICKER,
+        this.onTickerTime.bind(this)
+      );
+     
+
     this.audioPlayer = new AudioPlayer();
     this.paraTrooperSquadWithBoatCurrent;
     this.tickerParaTroopers = new Ticker(1000, 3);
@@ -49,6 +58,11 @@ class Parachute {
     input.addEventListener(EventNames.DEBUG, () => {
       this._viewer.toggleDebug();
     });
+    this.tickerTime.start();
+  }
+  onTickerTime(){
+    this.scoreclock.onTickerTime();
+    this.updateDisplaySequence(this.scoreclock);
   }
   moveLeft() {
     if (this.paused) return;
@@ -141,7 +155,8 @@ class Parachute {
   }
   validateParatrooperSave(squad) {
     if (squad.didSaveParatrooper()) {
-      this.scoreclock.incrementBy(1);
+      this.scoreclock.incrementBy( 1);
+      this.updateDisplaySequence(this.scoreclock);
       this.audioPlayer.play("SFXSuccess_1");
       squad.clearSavedParatrooperPending = true;
       setTimeout(() => {
@@ -170,6 +185,7 @@ class Parachute {
     this.updateDisplaySequence(pts);
   }
   resetGame() {
+    this.tickerTime.stop();
     this.paused = false;
     this.sc.reset();
     this.tickerParaTroopers.reset();

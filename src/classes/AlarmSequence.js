@@ -7,14 +7,14 @@ class AlarmSequence {
     this.hasManditoryData = false;
     for (let i = 0; i < sprites.length; i++) {
       let data = (this.sequenceData[i] = {});
-      data.mask = 0;
+      data.mask = false;
       data.sprite = sprites[i];
     }
   }
   manditorySprites(sprites){
     for (let i = 0; i < sprites.length; i++) {
       let data = (this.manditoryData[i] = {});
-      data.mask = 0;
+      data.mask = false;
       data.sprite = sprites[i];
     }
     this.hasManditoryData = true;
@@ -22,20 +22,20 @@ class AlarmSequence {
   displayManditorySprites(state){
     for (let i = 0; i < this.manditoryData.length; i++) {
       let data = this.manditoryData[i];
-      data.mask = state?1:0;      
+      data.mask = state?true:false;      
     }
   }
   reset() {
     for (let i = 0; i < this.sequenceData.length; i++) {
       let data = this.sequenceData[i];
-      data.mask = 0;
+      data.mask = false;
     }
     this.displayManditorySprites(false);
     this.index = 0;
    
   }
   process() {
-    this.sequenceData[ this.index] .mask = 1;
+    this.sequenceData[ this.index] .mask = true;
          
     this.index++; 
     if(this.index === this.sequenceData.length )      {

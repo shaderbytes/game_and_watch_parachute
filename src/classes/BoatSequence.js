@@ -5,17 +5,17 @@ class BoatSequence {
     this.sequenceData = [];
     for (let i = 0; i < sprites.length; i++) {
       let data = (this.sequenceData[i] = {});
-      data.mask = 0;
+      data.mask = false;
       data.sprite = sprites[i];
     }
   }
   reset() {
     for (let i = 0; i < this.sequenceData.length; i++) {
       let data = this.sequenceData[i];
-      data.mask = 0;
+      data.mask = false;
     }
     this.index = 1;
-    this.sequenceData[this.index].mask = 1;
+    this.sequenceData[this.index].mask = true;
   }
   moveLeft() {
     let previousIndex = this.index;
@@ -27,8 +27,8 @@ class BoatSequence {
     }
    
    
-    this.sequenceData[previousIndex].mask = 0;
-    this.sequenceData[this.index].mask = 1;
+    this.sequenceData[previousIndex].mask = false;
+    this.sequenceData[this.index].mask = true;
     return returnValue;
   }
   moveRight() {
@@ -40,8 +40,8 @@ class BoatSequence {
       returnValue = false;
     }
    
-    this.sequenceData[previousIndex].mask = 0;
-    this.sequenceData[this.index].mask = 1;
+    this.sequenceData[previousIndex].mask = false;
+    this.sequenceData[this.index].mask = true;
     return returnValue;
   }
 }

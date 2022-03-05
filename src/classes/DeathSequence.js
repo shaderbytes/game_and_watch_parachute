@@ -5,27 +5,27 @@ class DeathSequence {
     this.sequenceData = [];
     for (let i = 0; i < sprites.length; i++) {
       let data = (this.sequenceData[i] = {});
-      data.mask = 0;
+      data.mask = false;
       data.sprite = sprites[i];
     }
   }
   reset() {
     for (let i = 0; i < this.sequenceData.length; i++) {
       let data = this.sequenceData[i];
-      data.mask = 0;
+      data.mask = false;
     }
     this.index = 0;
     this.currentData = undefined;
   }
   process() {
     if (this.currentData) {
-        this.currentData.mask = 0;
+        this.currentData.mask = false;
       }
     if (this.index === this.sequenceData.length) {
       return false;
     }   
     this.currentData = this.sequenceData[this.index];
-    this.currentData.mask = 1;
+    this.currentData.mask = true;
     this.index++;
     return true;
   }

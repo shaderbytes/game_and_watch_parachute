@@ -7,14 +7,14 @@ class ChopperSequence {
       this.hasManditoryData = false;
       for (let i = 0; i < sprites.length; i++) {
         let data = (this.sequenceData[i] = {});
-        data.mask = 0;
+        data.mask = false;
         data.sprite = sprites[i];
       }
     }
     manditorySprites(sprites){
       for (let i = 0; i < sprites.length; i++) {
         let data = (this.manditoryData[i] = {});
-        data.mask = 1;
+        data.mask =true;
         data.sprite = sprites[i];
       }
       this.hasManditoryData = true;
@@ -22,13 +22,13 @@ class ChopperSequence {
     displayManditorySprites(state){
       for (let i = 0; i < this.manditoryData.length; i++) {
         let data = this.manditoryData[i];
-        data.mask = state?1:0;      
+        data.mask = state?true:false;      
       }
     }
     reset() {
       for (let i = 0; i < this.sequenceData.length; i++) {
         let data = this.sequenceData[i];
-        data.mask = 0;
+        data.mask = false;
       }
       this.displayManditorySprites(false);
       this.index = 0;
@@ -37,11 +37,11 @@ class ChopperSequence {
     }
     process() {
       if (this.currentData) {
-        this.currentData.mask = 0;
+        this.currentData.mask = false;
       }
      
       this.currentData =  this.sequenceData[ this.index];
-      this.currentData .mask = 1;
+      this.currentData .mask = true;
            
       this.index++; 
       if(this.index === this.sequenceData.length )      {

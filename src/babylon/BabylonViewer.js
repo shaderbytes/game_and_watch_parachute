@@ -32,13 +32,13 @@ BabylonViewer.prototype = {
         for (let j = 0; j < data.sprite.length; j++) {
           let node = this.scene.getNodeByName(data.sprite[j]);
           if (node) {
-            node.setEnabled(data.mask === 1 ? true : false);
+            node.setEnabled(data.mask ? true : false);
           }
         }
       } else {
         let node = this.scene.getNodeByName(data.sprite);
         if (node) {
-          node.setEnabled(data.mask === 1 ? true : false);
+          node.setEnabled(data.mask ? true : false);
         }
       }
     }
@@ -50,13 +50,13 @@ BabylonViewer.prototype = {
           for (let j = 0; j < data.sprite.length; j++) {
             let node = this.scene.getNodeByName(data.sprite[j]);
             if (node) {
-              node.setEnabled(data.mask === 1 ? true : false);
+              node.setEnabled(data.mask ? true : false);
             }
           }
         } else {
           let node = this.scene.getNodeByName(data.sprite);
           if (node) {
-            node.setEnabled(data.mask === 1 ? true : false);
+            node.setEnabled(data.mask ? true : false);
           }
         }
       }

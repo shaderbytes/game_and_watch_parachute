@@ -7,14 +7,14 @@ class LivesSequence{
         this.hasManditoryData = false;
         for (let i = 0; i < sprites.length; i++) {
           let data = (this.sequenceData[i] = {});
-          data.mask = 0;
+          data.mask = false;
           data.sprite = sprites[i];
         }
       }
       manditorySprites(sprites){
         for (let i = 0; i < sprites.length; i++) {
           let data = (this.manditoryData[i] = {});
-          data.mask = 1;
+          data.mask =true;
           data.sprite = sprites[i];
         }
         this.hasManditoryData = true;
@@ -22,20 +22,20 @@ class LivesSequence{
       displayManditorySprites(state){
         for (let i = 0; i < this.manditoryData.length; i++) {
           let data = this.manditoryData[i];
-          data.mask = state?1:0;      
+          data.mask = state?true:false;      
         }
       }
       reset() {
         for (let i = 0; i < this.sequenceData.length; i++) {
           let data = this.sequenceData[i];
-          data.mask = 0;
+          data.mask = false;
         }
         this.displayManditorySprites(false);
         this.lives = 3;
         this.index = 0;
       }
       process() {
-        this.sequenceData[ this.index] .mask = 1;
+        this.sequenceData[ this.index] .mask = true;
         if (--this.lives === 0) {
           return false;
         }          
