@@ -1,22 +1,22 @@
 import input from "@/classes/Input.js";
 import Ticker from "@/classes/Ticker.js";
-import BoatSequence from "@/classes/BoatSequence.js";
-import DeathSequence from "@/classes/DeathSequence.js";
-import LivesSequence from "@/classes/LivesSequence.js";
-import ScoreClock from "@/classes/ScoreClock.js";
-import ParatrooperSquadSequence from "@/classes/ParatrooperSquadSequence.js";
-
+import AudioPlayer from "@/classes/AudioPlayer.js";
+import SequenceController from "@/classes/SequenceController.js";
 import EventNames from "@/events/EventNames.js";
-
 class Parachute {
   constructor() {
-    this.livesSequence = new LivesSequence([
-      ["shark_0", "miss"],
-      "shark_1",
-      "shark_2",
-    ]);
-    this.boatSequence = new BoatSequence(["boat_1", "boat_2", "boat_3"]);
-    this.scoreClock = new ScoreClock();
+    this.sc = new SequenceController();
+    this.boat = this.sc.getSequence(this.sc.BOAT);
+    this.squad0 = this.sc.getSequence(this.sc.SQUAD0);
+    this.squad0b = this.sc.getSequence(this.sc.SQUAD0B);
+    this.squad1 = this.sc.getSequence(this.sc.SQUAD1);
+    this.squad2 = this.sc.getSequence(this.sc.SQUAD2);
+    this.death = this.sc.getSequence(this.sc.DEATH);
+    this.lives = this.sc.getSequence(this.sc.LIVES);
+    this.alarm = this.sc.getSequence(this.sc.ALARM);
+    this.chopper = this.sc.getSequence(this.sc.CHOPPER);
+    this.scoreclock = this.sc.getSequence(this.sc.SCORECLOCK);
+    this.audioPlayer = new AudioPlayer();
     this.paraTrooperSquadWithBoatCurrent;
     this.tickerParaTroopers = new Ticker(1000, 3);
     this.tickerDeath = new Ticker(500, 1);
@@ -31,46 +31,13 @@ class Parachute {
       this.onTickerDeathCache
     );
     this.paused = false;
-    this.lives = 3;
     this.allowPlayerMovement = false;
-    this.paraTrooperSquadSequence0 = new ParatrooperSquadSequence([
-      "pt_0_0",
-      "pt_0_1",
-      "pt_0_2",
-      "pt_0_3",
-      "pt_0_4",
-    ]);
-    this.paraTrooperSquadSequence1 = new ParatrooperSquadSequence([
-      "pt_1_0",
-      "pt_1_1",
-      "pt_1_2",
-      "pt_1_3",
-      "pt_1_4",
-      "pt_1_5",
-    ]);
-    this.paraTrooperSquadSequence2 = new ParatrooperSquadSequence([
-      "pt_2_0",
-      "pt_2_1",
-      "pt_2_2",
-      "pt_2_3",
-      "pt_2_4",
-      "pt_2_5",
-      "pt_2_6",
-    ]);
-    this.deathSequence = new DeathSequence([
-      "ptw_0_0",
-      ["ptw_1_0", "ptw_1_1"],
-      ["ptw_2_0", "ptw_2_1"],
-      ["ptw_3_0", "ptw_3_1"],
-      ["ptw_4_0", "ptw_4_1"],
-      ["ptw_5_0", "ptw_5_1"],
-    ]);
   }
   set viewer(value) {
     this._viewer = value;
   }
   initiate() {
-    this._viewer.lookAt(this.playerXIndex);
+    this._viewer.lookAt(this.boat.index);
     input.active = true;
     input.removeAllEventListeners();
     input.addEventListener(EventNames.MOVE_LEFT, this.moveLeft.bind(this));
@@ -86,49 +53,45 @@ class Parachute {
   moveLeft() {
     if (this.paused) return;
     if (!this.allowPlayerMovement) return;
-    this.boatSequence.moveLeft();
-    this._viewer.lookAt(this.boatSequence.index);
-    this.updateParaTrooperSquadWithBoat(this.boatSequence.index);
-    this.updateDisplaySequence(this.boatSequence);
+    if (this.boat.moveLeft()) {
+      this._viewer.lookAt(this.boat.index);
+      this.updateParaTrooperSquadWithBoat(this.boat.index);
+      this.updateDisplaySequence(this.boat);
+      this.audioPlayer.play("SFXMove");
+    }
   }
   moveRight() {
     if (this.paused) return;
     if (!this.allowPlayerMovement) return;
-    this.boatSequence.moveLeft();
-    this._viewer.lookAt(this.boatSequence.index);
-    this.updateParaTrooperSquadWithBoat(this.boatSequence.index);
-    this.updateDisplaySequence(this.boatSequence);
+    if (this.boat.moveRight()) {
+      this._viewer.lookAt(this.boat.index);
+      this.updateParaTrooperSquadWithBoat(this.boat.index);
+      this.updateDisplaySequence(this.boat);
+      this.audioPlayer.play("SFXMove");
+    }
   }
   updateParaTrooperSquadWithBoat(index) {
+    //handle current squad with boat before updating setting boat available to false
     if (this.paraTrooperSquadWithBoatCurrent) {
+      //if a paratrooper was saved the display has a slight delay
+      //since the boat is moving we cant have the character still there
+      //so check for pending save clear and if found just complete it directly
+      if (this.paraTrooperSquadWithBoatCurrent.clearSavedParatrooperPending) {
+        this.paraTrooperSquadWithBoatCurrent.clearSavedParatrooper();
+        this.updateDisplaySequence(this.paraTrooperSquadWithBoatCurrent);
+      }
       this.paraTrooperSquadWithBoatCurrent.setBoatAvailable(false);
     }
-    this.paraTrooperSquadWithBoatCurrent =
-      this["paraTrooperSquadSequence" + index];
+    //set current squad with boat now and set boat available to true
+    this.paraTrooperSquadWithBoatCurrent = this["squad" + this.boat.index];
     this.paraTrooperSquadWithBoatCurrent.setBoatAvailable(true);
+    //validate a saved paratrooper
+    this.validateParatrooperSave(this.paraTrooperSquadWithBoatCurrent);
   }
   updateDisplaySequence(sequence) {
     this._viewer.updateSprites(sequence);
   }
-  resetGame() {
-    this.paused = false;
-    this.lives = 3;
-    this.paraTrooperSquadSequence0.reset();
-    this.paraTrooperSquadSequence1.reset();
-    this.paraTrooperSquadSequence2.reset();
-    this.tickerParaTroopers.reset();
-    this.deathSequence.reset();
-    this.boatSequence.reset();
-    this.livesSequence.reset();
-    this._viewer.lookAt(this.boatSequence.index);
-    this.updateParaTrooperSquadWithBoat(this.boatSequence.index);
-    this.updateDisplaySequence(this.boatSequence);
-    this.updateDisplaySequence(this.paraTrooperSquadSequence0);
-    this.updateDisplaySequence(this.paraTrooperSquadSequence1);
-    this.updateDisplaySequence(this.paraTrooperSquadSequence2);
-    this.updateDisplaySequence(this.deathSequence);
-    this.updateDisplaySequence(this.livesSequence);
-  }
+
   gameStart() {
     //reset the game
     this.resetGame();
@@ -144,40 +107,85 @@ class Parachute {
     //because the player may have avoided the situation within the grace time
     if (squad.pendingDeath) {
       //
+      squad.death();
+      this.updateDisplaySequence(squad);
       this.allowPlayerMovement = false;
       this.tickerParaTroopers.stop();
-      this.deathSequence.index = index;
+      this.death.index = index;
       this.tickerDeath.start();
     }
   }
   onTickerDeath() {
-    if (!this.deathSequence.process()) {
+    if (!this.death.process()) {
       //death sequence complete
-      if (!this.livesSequence.process()) {
-        //all lives used up so its game over!
-      } else {
-        this.updateDisplaySequence(this.livesSequence);
+      this.tickerDeath.stop();
+      if (this.lives.process()) {
+        //still have lives so call post death on paratroopers
+        //allow movement and start trooper ticker again
+        this.lives.displayManditorySprites(true);
+        this.squad0.postDeathprocess();
+        this.squad1.postDeathprocess();
+        this.squad2.postDeathprocess();
+        this.updateDisplaySequence(this.squad0);
+        this.updateDisplaySequence(this.squad1);
+        this.updateDisplaySequence(this.squad2);
+        this.allowPlayerMovement = true;
+        this.tickerParaTroopers.start();
       }
-    } else {
-      //process display of sprites
-      this.updateDisplaySequence(this.deathSequence);
+
+      this.updateDisplaySequence(this.lives);
+    }
+    //process display of sprites
+    this.updateDisplaySequence(this.death);
+    this.audioPlayer.play("SFXMiss");
+  }
+  validateParatrooperSave(squad) {
+    if (squad.didSaveParatrooper()) {
+      this.scoreclock.incrementBy(1);
+      this.audioPlayer.play("SFXSuccess_1");
+      squad.clearSavedParatrooperPending = true;
+      setTimeout(() => {
+        squad.clearSavedParatrooper();
+        this.updateDisplaySequence(squad);
+      }, 500);
     }
   }
   onTickerParaTroopers(index) {
     if (this.paused) return;
-    let pts = this["paraTrooperSquadSequence" + index];
+    this.chopper.process();
+    this.updateDisplaySequence(this.chopper);
+    let pts = this["squad" + index];
     if (!pts.process()) {
       setTimeout(() => {
         this.executeDeathSequence(pts, index);
       }, 300);
     } else {
-      //process display of sprites
-      this.updateDisplaySequence(pts);
       //validate a saved paratrooper
-      if (pts.didSaveParatrooper()) {
-        //increment score
+      this.validateParatrooperSave(pts);
+      if (pts.hasActiveTroopers) {
+        this.audioPlayer.play("SFXTick");
       }
     }
+    //process display of sprites
+    this.updateDisplaySequence(pts);
+  }
+  resetGame() {
+    this.paused = false;
+    this.sc.reset();
+    this.tickerParaTroopers.reset();
+    this._viewer.lookAt(this.boat.index);
+    this.updateParaTrooperSquadWithBoat(this.boat.index);
+    this.updateDisplaySequence(this.boat);
+    this.updateDisplaySequence(this.squad0);
+    this.updateDisplaySequence(this.squad0b);
+    this.updateDisplaySequence(this.squad1);
+    this.updateDisplaySequence(this.squad2);
+    this.updateDisplaySequence(this.death);
+    this.updateDisplaySequence(this.lives);
+    this.updateDisplaySequence(this.alarm);
+    this.updateDisplaySequence(this.chopper);
+    this.updateDisplaySequence(this.scoreclock);
+    this.allowPlayerMovement = true;
   }
 }
 let singlton = new Parachute();

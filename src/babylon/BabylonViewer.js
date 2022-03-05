@@ -25,18 +25,42 @@ BabylonViewer.prototype = {
   },
   updateSprites(sequence) {
     //sequence has array named sequenceData with objects with mask and sprite properties
-    //this.scene.getNodeByName('buttons_hi_poly_primitive0')
+   
     for (let i = 0; i < sequence.sequenceData.length; i++) {
       let data = sequence.sequenceData[i];
       if (Array.isArray(data.sprite)) {
         for (let j = 0; j < data.sprite.length; j++) {
-          this.scene.getNodeByName(data.sprite[j]).enabled =
-            data.mask === 1 ? true : false;
+          let node = this.scene.getNodeByName(data.sprite[j]);
+          if (node) {
+            node.setEnabled(data.mask === 1 ? true : false);
+          }
         }
       } else {
-        this.scene.getNodeByName(data.sprite).enabled =
-          data.mask === 1 ? true : false;
+        let node = this.scene.getNodeByName(data.sprite);
+        if (node) {
+          node.setEnabled(data.mask === 1 ? true : false);
+        }
       }
+    }
+
+    if(sequence.hasManditoryData){
+      for (let i = 0; i < sequence.manditoryData.length; i++) {
+        let data = sequence.manditoryData[i];
+        if (Array.isArray(data.sprite)) {
+          for (let j = 0; j < data.sprite.length; j++) {
+            let node = this.scene.getNodeByName(data.sprite[j]);
+            if (node) {
+              node.setEnabled(data.mask === 1 ? true : false);
+            }
+          }
+        } else {
+          let node = this.scene.getNodeByName(data.sprite);
+          if (node) {
+            node.setEnabled(data.mask === 1 ? true : false);
+          }
+        }
+      }
+
     }
   },
 
@@ -137,7 +161,7 @@ BabylonViewer.prototype = {
     );
   },
   loadSuccess: function (event) {
-    console.log(event[0]);
+   
     event[0].parent = this.rootTransformNode;
     event[0].rotation = new BABYLON.Vector3(0, 0, 0);
     event[0].scaling = new BABYLON.Vector3(1, 1, 1);
@@ -173,11 +197,11 @@ BabylonViewer.prototype = {
   },
 
   loadError: function (error) {
-    console.log("loadError");
+   
     console.log(error);
   },
   loadProgress: function () {
-    console.log("loadProgress");
+   
   },
   toggleDebug() {
     this.isDebugShowing = !this.isDebugShowing;

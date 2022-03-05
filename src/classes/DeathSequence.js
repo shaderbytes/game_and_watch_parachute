@@ -14,6 +14,8 @@ class DeathSequence {
       let data = this.sequenceData[i];
       data.mask = 0;
     }
+    this.index = 0;
+    this.currentData = undefined;
   }
   process() {
     if (this.currentData) {
