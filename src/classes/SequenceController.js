@@ -7,6 +7,7 @@ import ChopperSequence from "@/classes/ChopperSequence.js";
 import ParatrooperSquadSequence from "@/classes/ParatrooperSquadSequence.js";
 class SequenceController {
   constructor() {
+    //variables for keys so as not to have to type strings for keys when referencing 
       this.LIVES = "LIVES";
       this.BOAT = "BOAT";
       this.SCORECLOCK = "SCORECLOCK";
@@ -17,7 +18,10 @@ class SequenceController {
       this.SQUAD1 = "SQUAD1";
       this.SQUAD2 = "SQUAD2";
       this.DEATH = "DEATH";
+      //all sequence instances stored here
       this.sequences = {};
+      //each sequence handles logic for the display of its asigned sprites
+      //the sequence is passed to the viewer in the game class to update the display
       this.addSequence(this.LIVES,new LivesSequence(["shark_0", "shark_1", "shark_2"]));
       this.getSequence(this.LIVES).manditorySprites(["miss"]);
       this.addSequence(this.BOAT,new BoatSequence(["boat_3", "boat_2", "boat_1"]));
@@ -81,27 +85,11 @@ class SequenceController {
    return this.sequences[key];
   }
   reset(){
-    this.LIVES = "LIVES";
-    this.BOAT = "BOAT";
-    this.SCORECLOCK = "SCORECLOCK";
-    this.CHOPPER = "CHOPPER";
-    this.ALARM = "ALARM";
-    this.SQUAD0 = "SQUAD0";
-    this.SQUAD0B = "SQUAD0B";
-    this.SQUAD1 = "SQUAD1";
-    this.SQUAD2 = "SQUAD2";
-    this.DEATH = "DEATH";
-    this.getSequence(this.LIVES).reset();
-    this.getSequence(this.BOAT).reset();
-    this.getSequence(this.SCORECLOCK).reset();
-    this.getSequence(this.CHOPPER).reset();
-    this.getSequence(this.ALARM).reset();
-    this.getSequence(this.SQUAD0).reset();
-    this.getSequence(this.SQUAD0B).reset();
-    this.getSequence(this.SQUAD1).reset();
-    this.getSequence(this.SQUAD2).reset();
-    this.getSequence(this.DEATH).reset();
-    
+    //call reset on all sequences    
+    for(let prop in this.sequences){
+      this.sequences[prop].reset();
+    }
+    //update any manditory sprites      
     this.getSequence(this.CHOPPER).displayManditorySprites(true);
     
   }

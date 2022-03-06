@@ -1,11 +1,14 @@
 import * as BABYLON from "babylonjs";
-
+const ObjectExtendUtil = require("@/utils/ObjectExtendUtil.js");
+const PublishSubscribe = require("@/events/PublishSubscribe.js");
+const EventNames = require("@/events/EventNames.js");
 import "babylonjs-loaders";
 import "babylonjs-post-process";
 import "babylonjs-materials";
 import { gsap } from "gsap";
 
 var BabylonViewer = function () {
+  ObjectExtendUtil.extend(this, PublishSubscribe);
   this.scene;
   this.engine;
   this.hdrTexture;
@@ -25,25 +28,26 @@ BabylonViewer.prototype = {
   },
   updateSprites(sequence) {
     //sequence has array named sequenceData with objects with mask and sprite properties
-   
-    for (let i = 0; i < sequence.sequenceData.length; i++) {
-      let data = sequence.sequenceData[i];
-      if (Array.isArray(data.sprite)) {
-        for (let j = 0; j < data.sprite.length; j++) {
-          let node = this.scene.getNodeByName(data.sprite[j]);
+    if (sequence.sequenceData) {
+      for (let i = 0; i < sequence.sequenceData.length; i++) {
+        let data = sequence.sequenceData[i];
+        if (Array.isArray(data.sprite)) {
+          for (let j = 0; j < data.sprite.length; j++) {
+            let node = this.scene.getNodeByName(data.sprite[j]);
+            if (node) {
+              node.setEnabled(data.mask ? true : false);
+            }
+          }
+        } else {
+          let node = this.scene.getNodeByName(data.sprite);
           if (node) {
             node.setEnabled(data.mask ? true : false);
           }
         }
-      } else {
-        let node = this.scene.getNodeByName(data.sprite);
-        if (node) {
-          node.setEnabled(data.mask ? true : false);
-        }
       }
     }
 
-    if(sequence.hasManditoryData){
+    if (sequence.hasManditoryData) {
       for (let i = 0; i < sequence.manditoryData.length; i++) {
         let data = sequence.manditoryData[i];
         if (Array.isArray(data.sprite)) {
@@ -60,7 +64,6 @@ BabylonViewer.prototype = {
           }
         }
       }
-
     }
   },
 
@@ -161,7 +164,7 @@ BabylonViewer.prototype = {
     );
   },
   loadSuccess: function (event) {
-   
+    this.dispatchEvent(EventNames.LOAD_COMPLETE);
     event[0].parent = this.rootTransformNode;
     event[0].rotation = new BABYLON.Vector3(0, 0, 0);
     event[0].scaling = new BABYLON.Vector3(1, 1, 1);
@@ -197,11 +200,20 @@ BabylonViewer.prototype = {
   },
 
   loadError: function (error) {
-   
-    console.log(error);
+    this.dispatchEvent(EventNames.LOAD_ERROR, error);
   },
-  loadProgress: function () {
-   
+  loadProgress: function (event) {
+    let progress = 0;
+    if (event === null || event === undefined) {
+      progress = "LOADING...";
+    } else {
+      if (!event.lengthComputable) {
+        progress = "LOADING...";
+      } else {
+        progress = "LOADING " + (((event.loaded / event.total) * 100) | 0);
+      }
+    }
+    this.dispatchEvent(EventNames.LOAD_PROGRESS, progress);
   },
   toggleDebug() {
     this.isDebugShowing = !this.isDebugShowing;

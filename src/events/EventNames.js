@@ -5,5 +5,8 @@ class EventNames {
   static PAUSE = "PAUSE";  
   static DEBUG = "DEBUG";  
   static ON_TICKER = "ON_TICKER";
+  static LOAD_PROGRESS = "LOAD_PROGRESS";
+  static LOAD_COMPLETE = "LOAD_COMPLETE";
+  static LOAD_ERROR = "LOAD_ERROR";
 }
 module.exports =  EventNames;

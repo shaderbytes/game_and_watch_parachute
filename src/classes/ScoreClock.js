@@ -52,8 +52,7 @@ class ScoreClock {
     this.setScore(this.score);
   }
   incrementBy(value) {
-    this.score += value;
-    console.log("score " + this.score);
+    this.score += value;   
     this.setScore(this.score);
   }
   setScore(value) {
