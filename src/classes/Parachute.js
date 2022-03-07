@@ -19,6 +19,13 @@ class Parachute {
     this.alarm = this.sc.getSequence(this.sc.ALARM);
     this.chopper = this.sc.getSequence(this.sc.CHOPPER);
     this.scoreclock = this.sc.getSequence(this.sc.SCORECLOCK);
+    this.shark = this.sc.getSequence(this.sc.SHARK);
+
+    //used to check if no paratroopers are on screen for any of the squads
+    this.noTroopers = false;
+    //used in conjuction with above to force a spawn
+    this.mustSpawnTrooper = false;
+    this.mustSpawnTrooperIndex = 0;
 
     //ticker for the clock
     this.tickerTime = new Ticker(1000, 1);
@@ -33,7 +40,7 @@ class Parachute {
     //this class then also caches which squad that is
     this.paraTrooperSquadWithBoatCurrent;
     //ticker for paratroopers
-    this.tickerParaTroopers = new Ticker(1000, 3);
+    this.tickerParaTroopers = new Ticker(700, 3);
     this.onTickerParaTroopersCache = this.onTickerParaTroopers.bind(this);
     this.tickerParaTroopers.addEventListener(
       EventNames.ON_TICKER,
@@ -46,15 +53,24 @@ class Parachute {
       EventNames.ON_TICKER,
       this.onTickerDeathCache
     );
+
+    //ticker for shark sequence
+    this.tickerShark = new Ticker(500, 1);
+    this.onTickerSharkCache = this.onTickerShark.bind(this);
+    this.tickerShark.addEventListener(
+      EventNames.ON_TICKER,
+      this.onTickerSharkCache
+    );
+
     this.paused = false;
     this.allowPlayerMovement = false;
   }
   set viewer(value) {
-    //viewer can be any class cerated to display the game in the browser
+    //viewer can be any class created to display the game in the browser
     //currently I use a 3d display using babylon engine.
     // the viewer interface is two functions ,
     // 1 lookAt(index) // index being the boat position
-    // updateSprites // I pass sequence classes to this function,
+    // 2 updateSprites // I pass sequence classes to this function,
 
     this._viewer = value;
   }
@@ -149,10 +165,14 @@ class Parachute {
     this.resetGame();
     //start the paratroopers ticker.
     this.tickerParaTroopers.start();
+    //start the shark ticker
+    this.startSharkTickerViaDelay();
   }
   gameEnd() {
     //stop the paratroopers ticker.
     this.tickerParaTroopers.stop();
+    this.tickerShark.stop();
+    clearTimeout(this.sharkTickerStartDelay);
   }
   executeDeathSequence(squad, index) {
     //when a paratrooper reaches the final position in the sequence , death is pending and there is a small delay to allow saves just after this position is reached,
@@ -170,9 +190,32 @@ class Parachute {
       this.tickerParaTroopers.stop();
       //the index of the boat/squad is passed to the death sequence to offset at what position the sequence starts
       this.death.index = index;
+      //stop the shark ticker and settimeout delay for starting the ticker
+      //also call reset to clear any masks and update display
+      //or else this will interfer with the death sequence
+      clearTimeout(this.sharkTickerStartDelay);
+      this.tickerShark.stop();
+      this.shark.reset();
+      this.updateDisplaySequence(this.shark);
+
       //start death ticker
       this.tickerDeath.start();
     }
+  }
+  startSharkTickerViaDelay(){
+    this.sharkTickerStartDelay = setTimeout(() => {
+      console.log(this.tickerShark)
+      this.tickerShark.start();
+    }, 10000);
+  }
+ 
+  onTickerShark() {
+    if (!this.shark.process()) {
+      this.tickerShark.stop();
+      this.startSharkTickerViaDelay()
+    }
+    //update the viewer with the ammended data from the death sequence step
+    this.updateDisplaySequence(this.shark);
   }
   onTickerDeath() {
     //calling the death sequence process function , advances the index of the sequence
@@ -197,6 +240,7 @@ class Parachute {
         this.updateDisplaySequence(this.squad2);
         this.allowPlayerMovement = true;
         this.tickerParaTroopers.start();
+        this.startSharkTickerViaDelay();
       }
       //update the viewer with the ammended data from the lives sequence step
       this.updateDisplaySequence(this.lives);
@@ -215,9 +259,9 @@ class Parachute {
       this.scoreclock.incrementBy(1);
       this.updateDisplaySequence(this.scoreclock);
       this.audioPlayer.play("SFXSuccess_1");
-      //this flag is set because there is a small time delay to set the saved paratroopers sprite to false , so it does not dissapear instantly, 
+      //this flag is set because there is a small time delay to set the saved paratroopers sprite to false , so it does not dissapear instantly,
       //code execution is fast enough to not even see the character in position if you dont do this
-      //the flag is used when the boat is moved during this delay. which will then process the save immediately in the same manner as the delay below
+      //the flag is used when the boat is moved during this delay. which will then process the save immediately in the same manner as the delay callback below
       squad.clearSavedParatrooperPending = true;
       setTimeout(() => {
         //set clearSavedParatrooperPending to false , updates mask to hide sprite now nad reevaluates if the squad has any active sprites
@@ -237,7 +281,17 @@ class Parachute {
     //get reference to a squad and call process
     //if it returns false it means there is a pending death
     //if true just check for a possible save and active troopers
+    if (index === 0) {
+      this.noTroopers = 0;
+    }
     let pts = this["squad" + index];
+    if (this.mustSpawnTrooper) {
+      if (index === this.mustSpawnTrooperIndex) {
+        pts.mustSpawnTrooper = true;
+      } else {
+        pts.ignoreSpawnTrooper = true;
+      }
+    }
     if (!pts.process()) {
       setTimeout(() => {
         this.executeDeathSequence(pts, index);
@@ -246,7 +300,16 @@ class Parachute {
       //validate a saved paratrooper
       this.validateParatrooperSave(pts);
       if (pts.hasActiveTroopers) {
+        this.noTroopers++;
         this.audioPlayer.play("SFXTick");
+      }
+      if (index === 2) {
+        if (this.noTroopers === 0) {
+          this.mustSpawnTrooper = true;
+          this.mustSpawnTrooperIndex = Math.ceil(Math.random() * 3) - 1;
+        } else {
+          this.mustSpawnTrooper = false;
+        }
       }
     }
     //process display of sprites
@@ -257,6 +320,8 @@ class Parachute {
     //it is possible to start a new game at any time
     this.tickerTime.stop();
     this.paused = false;
+    //clear shark ticker timout
+    clearTimeout(this.sharkTickerStartDelay);
     //calling reset on sequence controller will call reset functions on all sequences
     this.sc.reset();
     //reset paratroopers ticker
@@ -279,6 +344,7 @@ class Parachute {
     this.updateDisplaySequence(this.alarm);
     this.updateDisplaySequence(this.chopper);
     this.updateDisplaySequence(this.scoreclock);
+    this.updateDisplaySequence(this.shark);
     this.allowPlayerMovement = true;
   }
 }

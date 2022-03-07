@@ -36,7 +36,7 @@ export default {
           parachute.viewer = babylonViewer;
           parachute.initiate();
         });
-        babylonViewer.load(require("../assets/glb/p_v_1_2.glb"));
+        babylonViewer.load(require("../assets/glb/p_v_1_3.glb"));
       }
     });
     return {

@@ -1,5 +1,6 @@
 import BoatSequence from "@/classes/BoatSequence.js";
 import DeathSequence from "@/classes/DeathSequence.js";
+import SharkSequence from "@/classes/SharkSequence.js";
 import LivesSequence from "@/classes/LivesSequence.js";
 import AlarmSequence from "@/classes/AlarmSequence.js";
 import ScoreClock from "@/classes/ScoreClock.js";
@@ -18,6 +19,7 @@ class SequenceController {
       this.SQUAD1 = "SQUAD1";
       this.SQUAD2 = "SQUAD2";
       this.DEATH = "DEATH";
+      this.SHARK = "SHARK";
       //all sequence instances stored here
       this.sequences = {};
       //each sequence handles logic for the display of its asigned sprites
@@ -72,6 +74,14 @@ class SequenceController {
         ["ptw_3_0", "sw_3_0"],
         ["ptw_4_0", "sw_4_0"],
         ["ptw_5_0", "sw_5_0"],
+      ]));
+      this.addSequence(this.SHARK,new SharkSequence([
+       
+         "sw_1_0",
+         "sw_2_0",
+         "sw_3_0",
+         "sw_4_0",
+         "sw_5_0",
       ]));
    
    

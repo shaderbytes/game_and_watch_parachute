@@ -22,6 +22,7 @@ class DeathSequence {
         this.currentData.mask = false;
       }
     if (this.index === this.sequenceData.length) {
+      this.index = 0;
       return false;
     }   
     this.currentData = this.sequenceData[this.index];
