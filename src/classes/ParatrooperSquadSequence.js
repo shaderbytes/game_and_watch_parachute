@@ -65,7 +65,7 @@ class ParatrooperSquadSequence {
     let r = Math.random();
     let newMask = 0;
 
-    let min = Math.ceil(8);
+    let min = Math.ceil(4);
     let max = Math.floor(18);
     let result =  Math.floor(Math.random() * (max - min + 1)) + min;
    

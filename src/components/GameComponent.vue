@@ -1,5 +1,6 @@
 <template>
-  <div v-if="hideloader" class="preloader-window">
+<div v-if="!showloader" id="instructions"><p>new game: 1 Key   -   pause: p Key   -   move: arrow Keys left/right    -   zoom: mousewheel</p></div>
+  <div v-if="showloader" class="preloader-window">
     <div class="preloader-container">
       <div class="preloader-text">{{ loadError }}</div>
       <div class="preloader-text">{{ loadProgress }}</div>
@@ -20,7 +21,7 @@ export default {
     const bjsCanvas = ref(null);
     var loadError = ref("");
     var loadProgress = ref("");
-    var hideloader = ref(false);
+    var showloader = ref(true);
     onMounted(() => {
       if (bjsCanvas.value) {
         let babylonViewer = new BabylonViewer();
@@ -32,7 +33,7 @@ export default {
           loadProgress.value = event;
         });
         babylonViewer.addEventListener(EventNames.LOAD_COMPLETE, (event) => {
-          hideloader = true;
+          showloader.value = false;
           parachute.viewer = babylonViewer;
           parachute.initiate();
         });
@@ -40,7 +41,7 @@ export default {
       }
     });
     return {
-      bjsCanvas,loadError,loadProgress,hideloader
+      bjsCanvas,loadError,loadProgress,showloader
     };
   },
 };
@@ -70,4 +71,17 @@ export default {
   font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
 
 }
+#instructions{
+position:absolute;
+width:100%;
+color: #8a8a8a;
+
+}
+#instructions p{
+  text-align: center;
+  width:100%;
+  font-size: 13px;
+   font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif
+  
+  }
 </style>

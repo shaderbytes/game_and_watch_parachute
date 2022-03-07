@@ -202,17 +202,17 @@ class Parachute {
       this.tickerDeath.start();
     }
   }
-  startSharkTickerViaDelay(){
+  startSharkTickerViaDelay() {
     this.sharkTickerStartDelay = setTimeout(() => {
-      console.log(this.tickerShark)
+      console.log(this.tickerShark);
       this.tickerShark.start();
     }, 10000);
   }
- 
+
   onTickerShark() {
     if (!this.shark.process()) {
       this.tickerShark.stop();
-      this.startSharkTickerViaDelay()
+      this.startSharkTickerViaDelay();
     }
     //update the viewer with the ammended data from the death sequence step
     this.updateDisplaySequence(this.shark);
@@ -278,13 +278,17 @@ class Parachute {
     this.chopper.process();
     this.updateDisplaySequence(this.chopper);
 
-    //get reference to a squad and call process
-    //if it returns false it means there is a pending death
-    //if true just check for a possible save and active troopers
+    //reset no troopers count
     if (index === 0) {
       this.noTroopers = 0;
     }
+    //get reference to a squad
     let pts = this["squad" + index];
+
+    // if no troopers were on screen in previous tick
+    //then a force sawn is used, this just sets up some flags
+    //so can call process as normal , inside the process function
+    //it will use these flags as needed and then remove them
     if (this.mustSpawnTrooper) {
       if (index === this.mustSpawnTrooperIndex) {
         pts.mustSpawnTrooper = true;
@@ -292,6 +296,9 @@ class Parachute {
         pts.ignoreSpawnTrooper = true;
       }
     }
+    // call process
+    //if it returns false it means there is a pending death
+    //if true just check for a possible save and active troopers
     if (!pts.process()) {
       setTimeout(() => {
         this.executeDeathSequence(pts, index);
@@ -303,6 +310,9 @@ class Parachute {
         this.noTroopers++;
         this.audioPlayer.play("SFXTick");
       }
+      //incase there are no more troopers on screen ( when this.noTroopers === 0) , you dont want
+      //to continue to have none so force a spawn on one of the three squads
+      //and on the other two skip, this is processed on the next tick
       if (index === 2) {
         if (this.noTroopers === 0) {
           this.mustSpawnTrooper = true;
